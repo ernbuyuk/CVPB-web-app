@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+:root {
+  --bg: #071723;
+  --surface: #102335;
+  --surface-2: #0b1c2b;
+  --edge: rgba(166, 208, 236, 0.25);
+  --edge-strong: rgba(166, 208, 236, 0.48);
+  --text: #c6d9e9;
+  --text-h: #f3f8fd;
+  --text-muted: #94acc0;
+  --input-bg: #0f2638;
+  --accent: #ffd769;
+
+  --sans: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --heading: 'Chakra Petch', 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', 'Cascadia Mono', ui-monospace, monospace;
+
+  font-family: var(--sans);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.45;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(240, 190, 91, 0.22), transparent 40%),
+    radial-gradient(circle at 90% 20%, rgba(94, 183, 255, 0.16), transparent 38%),
+    linear-gradient(180deg, #06111a 0%, var(--bg) 50%, #050f17 100%);
+}
+
+#root {
+  min-height: 100svh;
+}

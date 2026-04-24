@@ -1,0 +1,10 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "npm run build": true,
+        "\"$HOME/.dotnet/dotnet\"": true,
+        "/^cd /home/ubuntu2204-new/eren/CVPB-web-app && cd frontend && npm run build && cd \\.\\./backend && export PATH=\"\\$HOME/\\.dotnet:\\$PATH\" && \"\\$HOME/\\.dotnet/dotnet\" build$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

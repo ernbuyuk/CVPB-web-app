@@ -28,7 +28,6 @@ frontend/dist/
 *.sln
 
 # Large Media Files (use Git LFS or host externally)
-*.gif
 *.mp4
 *.avi
 *.mov

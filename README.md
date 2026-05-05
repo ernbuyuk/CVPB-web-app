@@ -2,6 +2,14 @@
 
 Computer Vision Pipeline Builder (MVP) web uygulamasi.
 
+## Canli Demo
+
+- Uygulama: https://cvpb-frontend-25c2uz62w-buyukeren53-2077s-projects.vercel.app/
+
+## Kullanim GIFI
+
+![CVPB Demo](assets/readme/cvpb-demo.gif)
+
 Kullanici bir goruntu yukler, pipeline adimlari ekler (Grayscale, Blur, Canny), sonucu canvas uzerinde anlik gorur ve pipeline tanimini backend'e kaydedebilir.
 
 ## Mimari

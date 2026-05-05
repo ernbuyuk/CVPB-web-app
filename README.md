@@ -2,6 +2,29 @@
 
 Computer Vision Pipeline Builder (MVP) web uygulamasi.
 
+## Canli Demo
+
+- Uygulama: https://cvpb-frontend-25c2uz62w-buyukeren53-2077s-projects.vercel.app/
+
+## README'de Gorsel / GIF Kullanimi
+
+README icine dogrudan gorsel eklemek icin medyayi repoya koyup markdown ile referans vermek en temiz yontemdir.
+
+1. Ornek medya dosyanizi repoya ekleyin (onerilen klasor: `assets/readme/`).
+2. README icine asagidaki satiri ekleyin:
+
+```md
+![CVPB Demo](assets/readme/cvpb-demo.gif)
+```
+
+PNG/JPG ekran goruntusu eklemek isterseniz:
+
+```md
+![CVPB Ekran Goruntusu](assets/readme/cvpb-screenshot.png)
+```
+
+Not: GIF dosyasi buyukse (ozellikle 10MB+), `ffmpeg` ile optimize edip eklemeniz tavsiye edilir.
+
 Kullanici bir goruntu yukler, pipeline adimlari ekler (Grayscale, Blur, Canny), sonucu canvas uzerinde anlik gorur ve pipeline tanimini backend'e kaydedebilir.
 
 ## Mimari

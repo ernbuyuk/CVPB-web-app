@@ -21,7 +21,30 @@ type SavedPipeline = {
   createdAt: string
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5080'
+// localStorage key for persisting pipelines (no backend needed)
+const STORAGE_KEY = 'cvpb_saved_pipelines'
+
+function getStoredPipelines(): SavedPipeline[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+function saveStoredPipelines(pipelines: SavedPipeline[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pipelines))
+  } catch (error) {
+    console.error('localStorage save error:', error)
+  }
+}
+
+function generateId(): number {
+  const existing = getStoredPipelines()
+  return existing.length > 0 ? Math.max(...existing.map((p) => p.id)) + 1 : 1
+}
 
 function loadOpenCv(): Promise<void> {
   if (window.cv) {
@@ -67,7 +90,6 @@ function App() {
   const originalCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const outputCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const operationGroups = useMemo(() => getOperationsByCategory(), [])
-  const operationDefinitions = useMemo(() => getOperationDefinitions(), [])
 
   useEffect(() => {
     void loadOpenCv()
@@ -86,22 +108,10 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steps, cvReady])
 
-  async function fetchPipelines() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/pipelines`)
-      if (!response.ok) {
-        throw new Error('Pipeline listesi alinamadi.')
-      }
-
-      const data = (await response.json()) as SavedPipeline[]
-      setSavedPipelines(data)
-    } catch (error) {
-      setErrorText((error as Error).message)
-    }
-  }
-
+  // Load saved pipelines from localStorage
   useEffect(() => {
-    void fetchPipelines()
+    const stored = getStoredPipelines()
+    setSavedPipelines(stored)
   }, [])
 
   function addStep(operationId: PipelineStep['type']) {
@@ -199,7 +209,7 @@ function App() {
     }
   }
 
-  async function savePipeline() {
+  function savePipeline() {
     if (!pipelineName.trim()) {
       setErrorText('Pipeline ismi zorunludur.')
       return
@@ -209,20 +219,20 @@ function App() {
     setErrorText('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pipelines`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: pipelineName,
-          pipeline: serializePipelineSteps(steps),
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Pipeline kaydedilemedi.')
+      const newPipeline: SavedPipeline = {
+        id: generateId(),
+        name: pipelineName,
+        pipeline: serializePipelineSteps(steps),
+        createdAt: new Date().toISOString(),
       }
 
-      await fetchPipelines()
+      const updated = [...getStoredPipelines(), newPipeline]
+      saveStoredPipelines(updated)
+      setSavedPipelines(updated)
+      setPipelineName('MVP Pipeline')
+      setSteps([])
+      setErrorText('Pipeline başarıyla kaydedildi!')
+      setTimeout(() => setErrorText(''), 3000)
     } catch (error) {
       setErrorText((error as Error).message)
     } finally {
@@ -233,18 +243,15 @@ function App() {
   function loadPipeline(pipeline: SavedPipeline) {
     setPipelineName(pipeline.name)
     setSteps(deserializePipelineSteps(pipeline.pipeline))
+    setErrorText('')
   }
 
-  async function deletePipeline(id: number) {
+  function deletePipeline(id: number) {
     setBusy(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pipelines/${id}`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) {
-        throw new Error('Pipeline silinemedi.')
-      }
-      await fetchPipelines()
+      const updated = getStoredPipelines().filter((p) => p.id !== id)
+      saveStoredPipelines(updated)
+      setSavedPipelines(updated)
     } catch (error) {
       setErrorText((error as Error).message)
     } finally {
@@ -365,7 +372,10 @@ function App() {
     )
   }
 
-  function normalizeControlValue(control: { kind: string; options?: Array<{ value: string | number | boolean }>; defaultValue: unknown }, rawValue: string | boolean) {
+  function normalizeControlValue(
+    control: { kind: string; options?: Array<{ value: string | number | boolean }>; defaultValue: unknown },
+    rawValue: string | boolean,
+  ) {
     if (control.kind === 'number') {
       return Number(rawValue)
     }
@@ -378,15 +388,17 @@ function App() {
     return rawValue
   }
 
+  function getDefinition(stepType: PipelineStep['type']) {
+    return getOperationDefinitions().find((definition) => definition.id === stepType) ?? getOperationDefinitions()[0]
+  }
+
   return (
     <main className="app-shell">
       <header className="title-row">
         <div>
           <p className="eyebrow">Computer Vision Pipeline Builder</p>
           <h1>No-code image processing playground</h1>
-          <p className="muted">
-            Upload ettiginiz goruntuye adim adim filtre uygulayin ve sonucu anlik olarak gorun.
-          </p>
+          <p className="muted">Upload ettiginiz goruntuye adim adim filtre uygulayin ve sonucu anlik olarak gorun.</p>
         </div>
         <div className="status-box">
           <p>OpenCV: {cvReady ? 'hazir' : 'yukleniyor...'}</p>
@@ -431,7 +443,7 @@ function App() {
             {busy ? 'Kaydediliyor...' : 'Save'}
           </button>
 
-          {errorText && <p className="error">{errorText}</p>}
+          {errorText && <p className={errorText.includes('başarı') ? 'success' : 'error'}>{errorText}</p>}
         </aside>
 
         <section className="card preview">
@@ -441,7 +453,7 @@ function App() {
             {steps.map((step, index) => (
               <article key={step.id} className={`step-pill ${stepErrors[step.id] ? 'step-pill-error' : ''}`}>
                 <div className="step-header">
-                  <strong>{operationDefinitions.find((definition) => definition.id === step.type)?.label ?? step.type}</strong>
+                  <strong>{getDefinition(step.type).label}</strong>
                   <button className="danger slim" onClick={() => removeStep(step.id)}>
                     Sil
                   </button>
@@ -463,7 +475,7 @@ function App() {
         </section>
 
         <aside className="card saved-list">
-          <h2>Saved Pipelines</h2>
+          <h2>Saved Pipelines (Local Storage)</h2>
           {savedPipelines.length === 0 && <p className="muted">Kayitli pipeline bulunamadi.</p>}
           {savedPipelines.map((pipeline) => (
             <article key={pipeline.id} className="saved-item">
@@ -474,7 +486,7 @@ function App() {
               </div>
               <div className="saved-actions">
                 <button onClick={() => loadPipeline(pipeline)}>Yukle</button>
-                <button className="danger" onClick={() => void deletePipeline(pipeline.id)}>
+                <button className="danger" onClick={() => deletePipeline(pipeline.id)}>
                   Sil
                 </button>
               </div>
@@ -484,10 +496,6 @@ function App() {
       </section>
     </main>
   )
-}
-
-function getDefinition(stepType: PipelineStep['type']) {
-  return getOperationDefinitions().find((definition) => definition.id === stepType) ?? getOperationDefinitions()[0]
 }
 
 export default App

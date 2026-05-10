@@ -4,7 +4,7 @@ Computer Vision Pipeline Builder (MVP) web uygulamasi.
 
 ## Canli Demo
 
-- Uygulama: [https://cvpb-frontend-25c2uz62w-buyukeren53-2077s-projects.vercel.app/](https://cvpb-frontend.vercel.app/)
+- Uygulama: [https://cvpb-frontend.vercel.app/](https://cvpb-frontend.vercel.app/)
 
 ## Kullanim GIFI
 
